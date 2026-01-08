@@ -41,6 +41,7 @@ const PdfSigner = () => {
   const [totalPages, setTotalPages] = useState<number>(0);
   const [signatures, setSignatures] = useState<Record<number, Signature[]>>({});
   const [signatureText, setSignatureText] = useState<string>("");
+  const [includeDate, setIncludeDate] = useState<boolean>(false); // New state for date
   const [scale] = useState<number>(1.5);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -204,9 +205,13 @@ const PdfSigner = () => {
       return;
     }
     if (signatureText) {
+      // Append date if checkbox is checked
+      const dateStr = includeDate ? ` ${new Date().toLocaleDateString()}` : "";
+      const finalText = signatureText + dateStr;
+
       const newSig: Signature = {
         id: Date.now(),
-        text: signatureText,
+        text: finalText,
         canvasX: x,
         canvasY: y,
         pdfX: x / scale,
@@ -248,66 +253,6 @@ const PdfSigner = () => {
     }));
   };
 
-  //   const downloadSignedPDF = async () => {
-  //     if (!pdfFile) return;
-  //     setIsLoading(true);
-  //     try {
-  //       const pdfDoc = await PDFDocument.load(pdfFile.slice(0));
-  //       pdfDoc.registerFontkit(fontkit);
-
-  //       let customFont;
-  //       try {
-  //         // Attempt to fetch the custom font
-  //         const fontBytes = await fetch(FONT_URL).then((res) => {
-  //           if (!res.ok) throw new Error("Font fetch failed");
-  //           return res.arrayBuffer();
-  //         });
-  //         customFont = await pdfDoc.embedFont(fontBytes);
-  //       } catch (e) {
-  //         console.warn(
-  //           "Could not load custom font, falling back to standard font.",
-  //           e
-  //         );
-  //         // Fallback to standard italic font if fetch fails
-  //         customFont = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
-  //       }
-
-  //       const pages = pdfDoc.getPages();
-
-  //       Object.entries(signatures).forEach(([pageNumStr, pageSigs]) => {
-  //         const pageIdx = parseInt(pageNumStr) - 1;
-  //         if (pageIdx >= 0 && pageIdx < pages.length) {
-  //           const page = pages[pageIdx];
-  //           const { x: ox, y: oy } = page.getCropBox();
-
-  //           pageSigs.forEach((sig) => {
-  //             page.drawText(sig.text, {
-  //               x: sig.pdfX + ox,
-  //               y: sig.pdfY + oy,
-  //               size: sig.size,
-  //               font: customFont,
-  //               color: rgb(0, 0, 0),
-  //             });
-  //           });
-  //         }
-  //       });
-
-  //       const pdfBytes = await pdfDoc.save();
-  //       const blob = new Blob([new Uint8Array(pdfBytes)], {
-  //         type: "application/pdf",
-  //       });
-  //       const link = document.createElement("a");
-  //       link.href = URL.createObjectURL(blob);
-  //       link.download = `signed_${Date.now()}.pdf`;
-  //       link.click();
-  //     } catch (err) {
-  //       console.error("Export Error:", err);
-  //       alert("Failed to save PDF.");
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
   const downloadSignedPDF = async () => {
     if (!pdfFile) return;
     setIsLoading(true);
@@ -334,22 +279,8 @@ const PdfSigner = () => {
         if (pageIdx >= 0 && pageIdx < pages.length) {
           const page = pages[pageIdx];
 
-          // PDF-lib uses the page size in points
-          // const { width: pageWidth, height: pageHeight } = page.getSize();
-
-          // // pdfjs rendering scale factors
-          // // We need to find the ratio between the canvas size and the actual PDF size
-          // const pdfViewport = page.getSize(); // Standard points
-
           pageSigs.forEach((sig) => {
-            // 1. Normalize the font size.
-            // Since the canvas was scaled by 'scale' (1.5), we divide by it.
             const normalizedFontSize = sig.size / scale;
-
-            // 2. Normalize coordinates.
-            // PDF (0,0) is bottom-left. Canvas (0,0) is top-left.
-            // sig.pdfX and sig.pdfY were already divided by scale in onMouseDown,
-            // but we ensure the alignment is perfect here.
 
             page.drawText(sig.text, {
               x: sig.pdfX,
@@ -395,25 +326,34 @@ const PdfSigner = () => {
         <div className="p-5 border-b border-slate-100 bg-white flex items-center gap-4 flex-wrap">
           {!pdfDocument ? (
             <div className="w-full flex justify-center py-12">
-              <label className="group flex flex-col items-center gap-4 px-10 py-8 bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all">
-                <div className="p-4 bg-white rounded-full shadow-sm group-hover:scale-110 transition-transform">
-                  <Upload className="text-indigo-600" size={32} />
-                </div>
-                <div className="text-center">
-                  <span className="block text-lg font-bold text-slate-700">
-                    Click to upload document
-                  </span>
-                  <span className="text-sm text-slate-500 font-medium">
-                    PDF files up to 10MB
+              {isLoading ? (
+                <div className="flex flex-col items-center justify-center gap-4 py-10">
+                  <Loader2 className="animate-spin text-indigo-600" size={48} />
+                  <span className="text-slate-600 font-medium animate-pulse">
+                    Processing PDF...
                   </span>
                 </div>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                />
-              </label>
+              ) : (
+                <label className="group flex flex-col items-center gap-4 px-10 py-8 bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all">
+                  <div className="p-4 bg-white rounded-full shadow-sm group-hover:scale-110 transition-transform">
+                    <Upload className="text-indigo-600" size={32} />
+                  </div>
+                  <div className="text-center">
+                    <span className="block text-lg font-bold text-slate-700">
+                      Click to upload document
+                    </span>
+                    <span className="text-sm text-slate-500 font-medium">
+                      PDF files up to 10MB
+                    </span>
+                  </div>
+                  <input
+                    type="file"
+                    accept="application/pdf"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
           ) : (
             <>
@@ -428,6 +368,18 @@ const PdfSigner = () => {
                   value={signatureText}
                   onChange={(e) => setSignatureText(e.target.value)}
                 />
+                <div className="h-6 w-px bg-slate-300 mx-1"></div>
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={includeDate}
+                    onChange={(e) => setIncludeDate(e.target.checked)}
+                    className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 accent-indigo-600"
+                  />
+                  <span className="text-sm font-medium text-slate-600">
+                    Date
+                  </span>
+                </label>
               </div>
 
               <div className="hidden md:flex flex-col">
