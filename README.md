@@ -1,76 +1,59 @@
-# React + TypeScript + Vite
+# PDF Signature Tool
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A professional, client-side PDF signing application built with **React**, **Vite**, and **PDF.js**. This tool allows users to upload PDF documents, place customizable signatures with a realistic cursive font, and download the signed version without ever uploading the file to a server.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 📄 Project Description
 
-## React Compiler
+The **PDF Signature Tool** provides a seamless "What You See Is What You Get" (WYSIWYG) experience for document signing. By leveraging `pdf-lib` for document manipulation and `pdfjs-dist` for high-fidelity rendering, the application handles complex PDF structures entirely within the browser.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
 
-Note: This will impact Vite dev & build performances.
 
-## Expanding the ESLint configuration
+This project solves the common coordinate-mapping problem between the browser's HTML5 Canvas (which is pixel-based and top-down) and the PDF coordinate system (which is point-based and bottom-up).
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Key Features
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+* **Secure & Private:** No files are uploaded to a server; all processing happens in the user's browser.
+* **Dynamic Signing:** Type your name and click anywhere on the document to place a signature.
+* **Intuitive Controls:** Drag to reposition and use the handles to resize signatures on the fly.
+* **High Fidelity Rendering:** Uses the **Sacramento** cursive font for a realistic handwritten feel, both in the UI and the exported PDF.
+* **Multi-page Support:** Navigate through documents and add signatures to any page.
+* **Coordinate Normalization:** Automatically handles scale and DPI differences for precise placement.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+---
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## 🛠 Tech Stack
+
+* **Framework:** React 18 (TypeScript)
+* **Build Tool:** Vite
+* **PDF Engines:** * `pdfjs-dist` (for rendering)
+    * `pdf-lib` (for editing and saving)
+* **Icons:** Lucide React
+* **Styling:** Tailwind CSS
+
+---
+
+## 🚀 Local Development Instructions
+
+Follow these steps to get the project running on your local machine.
+
+### Prerequisites
+
+* **Node.js** (v18.0.0 or higher)
+* **npm** or **yarn**
+
+### 1. Clone the Repository
+
+```bash
+git clone [https://github.com/your-username/pdf-signer-tool.git](https://github.com/your-username/pdf-signer-tool.git)
+cd pdf-signer-tool
+
+npm install
+# or
+yarn install
+
+npm run dev
+# or
+yarn dev
 ```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-# pdf-signer
